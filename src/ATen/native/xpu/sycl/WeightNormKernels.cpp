@@ -44,7 +44,8 @@ void weight_norm_reduce_kernel(
     bool need_squre,
     bool is_final) {
   auto item = syclext::this_work_item::get_nd_item<2>();
-  char* shared_ptr = (char*)syclexp::get_work_group_scratch_memory();
+  char* shared_ptr =
+      static_cast<char*>(syclexp::get_work_group_scratch_memory());
 
   auto id = cfg.get_item_desc(item);
   int64_t si = id.glb_batch % cfg.stride_;
@@ -827,9 +828,9 @@ std::tuple<Tensor, Tensor> weight_norm_backward_kernel(
   auto grad_v = at::empty_like(saved_v, c10::get_contiguous_memory_format());
   auto grad_g = at::empty_like(saved_g, c10::get_contiguous_memory_format());
 
-  // Empty saved_v: grad_v is empty, grad_g = 0/0 = NaN (matches CPU/CUDA).
+  // Empty saved_v: grad_v is empty, grad_g = 0 (matches CPU/CUDA).
   if (saved_v.numel() == 0) {
-    grad_g.fill_(std::numeric_limits<double>::quiet_NaN());
+    grad_g.zero_();
     return {grad_v, grad_g};
   }
 

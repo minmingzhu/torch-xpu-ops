@@ -92,8 +92,7 @@ void upsample_nearest3d_out_template(
   auto& queue = at::xpu::getCurrentSYCLQueue();
   int64_t work_group_size = at::xpu::getKernelMaxWorkGroupSize<
       upsample_nearest3d_kernel<scalar_t, index_t, index_op_t>>();
-  int64_t work_group_num =
-      at::ceil_div((unsigned int)n, (unsigned int)work_group_size);
+  int64_t work_group_num = at::ceil_div(n, (int64_t)work_group_size);
   sycl_kernel_submit<upsample_nearest3d_kernel<scalar_t, index_t, index_op_t>>(
       work_group_num * work_group_size,
       work_group_size,
